@@ -57,7 +57,7 @@ object EstimationSession {
 object EstimationDeck {
   val FibPoints = Seq("0", "½", "1", "2", "3", "5", "8", "13", "20", "40", "100", "∞", "?", "☕")
   val TShirtSizes = Seq("-", "S", "M", "L", "XL", "XXL", "XXXl", "∞", "?", "☕")
-  val Letters = Seq("A", "B", "c", "D", "E", "F", "G", "H", "∞", "?", "☕")
+  val Letters = Seq("A", "B", "C", "D", "E", "F", "G", "H", "∞", "?", "☕")
   val UpDown = Seq("👍", "👎")
   val Confidence = Seq("✊", "☝️", "✌️", "🤟", "✌️✌️", "🖐")
   private val decks = Array(FibPoints, TShirtSizes, Letters, UpDown, Confidence)
