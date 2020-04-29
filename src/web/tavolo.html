@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+  <head>
+    <title>TypedMagic - Tavolo Agile Estimation</title>
+    <meta charset="utf-8">
+    <neta name=""viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+      var loginToken = JSON.parse(sessionStorage.getItem("tavoloToken"));
+
+      function loginOrHome() {
+        if (loginToken != null && loginToken != undefined) {
+          document.getElementById("home").style.display = "";
+          document.getElementById("splash").style.display = "none";
+          document.getElementById("menu-logout").style.display = "";
+          document.getElementById("yourName").innerHTML = loginToken.moniker;
+        } else {
+          document.getElementById("home").style.display = "none";
+          document.getElementById("splash").style.display = "";
+          document.getElementById("menu-logout").style.display = "none";
+        };
+      }
+
+      function login() {
+        var loginRequest = {
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value
+        };
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            sessionStorage.setItem("tavoloToken", xmlhttp.responseText)
+            location.reload();
+          } else {
+            document.getElementById("loginError").style.display="";
+          }
+        };
+//        xmlhttp.open("POST", "http://localhost:8372/login", true);
+        xmlhttp.open("POST", "http://" + window.location.hostname + ":8372/login");
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify(loginRequest));
+      }
+
+      function logout() {
+        sessionStorage.removeItem("tavoloToken");
+        location.reload();
+      }
+
+      function startSession() {
+        var canVote = (document.getElementById('canVoteStart').checked) ? true : false;
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            var resp =  JSON.parse(xmlhttp.responseText);
+            var sid = resp.sessionId;
+            window.location.href="join.html?session=" + sid + "&canVote=" + canVote;
+          }
+        };
+//        xmlhttp.open("POST", "http://localhost:8372/session", true);
+        xmlhttp.open("POST", "http://" + window.location.hostname + ":8372/session");
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.setRequestHeader("Authorization", "Bearer " + loginToken.token);
+        xmlhttp.send();
+      }
+
+      function joinSession() {
+        var sessionId = document.getElementById("sessionIdJoin").value;
+        var canVote = (document.getElementById('canVoteJoin').checked) ? true : false;
+        window.location.href="join.html?session=" + sessionId + "&canVote=" + canVote;
+      }
+
+    </script>
+  </head>
+  <body onload="loginOrHome()">
+    <div class="nav-bar">
+      <a class="top-link" id="menu-logout" href="javascript:logout()">LOGOUT</a>
+    </div>
+    <section class="splash" id="splash">
+      <h1>T A V O L O</h1>
+      <p>
+        Agile/Scrum Estimation Tool for Remote Teams
+      </p>
+      <div>
+        <h2>Login to start estimating<h2>
+      </div>
+      <div id="loginError" style="display:none">
+        <p>E-mail or password invalif. Please try again.</p>
+      </div>
+      <div>
+        <table>
+          <tr>
+            <td colspan="2"><input type="text" placeholder="E-mail address" id="email" name="email"/></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="2"><input type="password" placeholder="Password" id="password" name="password"/></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td><td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="2"><br/><a class="link-button" id="login-button" href="javascript:login()">L O G I N</a></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td><td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="2"><br/><a href="register.html">Register</a>&nbsp;&nbsp;&nbsp;<a href="reset-password.html">Reset passwordr</a> </td>
+          </tr>
+        </table>
+      </div>
+    </section>
+    <section class="splash" id="home">
+      <h1>T A V O L O</h1>
+      <p>
+        Welcome back, <span id="yourName"></span>
+      </p>
+      <div>
+        <h2>START A SESSION<h2>
+        <table>
+          <tr>
+            <td><input type ="checkbox" name="canVoteStart" id="canVoteStart"/></td><td>&nbsp;&nbsp;I want to vote</td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td><td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="2"><a class="link-button" id="login-button" href="javascript:startSession()">S T A R T &rarr;</a></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td><td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td><td>&nbsp;</td>
+          </tr>
+        </table>
+      </div>
+      <div>
+        <h2>JOIN A SESSION<h2>
+          <table>
+            <tr>
+              <td colspan="2"><input type="text" placeholder="Session ID" id="sessionIdJoin" name="sessionIdJoin"/></td>
+            </tr>
+            <tr>
+              <td>&nbsp;</td><td>&nbsp;</td>
+            </tr>
+            <tr>
+              <td><input type ="checkbox" name="canVoteJoin" id="canVoteJoin"/></td><td>&nbsp;&nbsp;I want to vote</td>
+            </tr>
+            <tr>
+              <td>&nbsp;</td><td>&nbsp;</td>
+            </tr>
+            <tr>
+              <td colspan="2"><a class="link-button" id="login-button" href="javascript:joinSession()">J O I N &rarr;</a></td>
+            </tr>
+          </table>
+      </div>
+    </section>
+    <div class="footer">
+      (c) 2019-2020 TypedMagic - All Rights Reserved
+    </div>
+  </body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+  <head>
+    <title>TypedMagic - Tavolo Agile Estimation - Register</title>
+    <meta charset="utf-8">
+    <neta name=""viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+
+      function register() {
+        document.getElementById("requiredFieldsError").style.display = "none";
+        document.getElementById("passwordMatchError").style.display = "none";
+        document.getElementById("registerationError").style.display = "none";
+        var email = document.getElementById("email").value
+        var moniker = document.getElementById("moniker").value
+        var pw1 = document.getElementById("password").value
+        var pw2 = document.getElementById("repassword").value
+        if (email == "" || moniker == "" || pw1 == "") {
+          document.getElementById("requiredFieldsError").style.display = "";
+        } else{
+          if (pw1 != pw2) {
+            document.getElementById("passwordMatchError").style.display = "";
+          } else {
+            var registerRequest = {
+              email: email,
+              moniker: moniker,
+              password: pw1
+            }
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+              if (this.readyState == 4 && this.status == 200) {
+                sessionStorage.setItem("tavoloToken", xmlhttp.responseText)
+                location.href="tavolo.html";
+              } else {
+                document.getElementById("registerationError").style.display="";
+              }
+            };
+//            xmlhttp.open("POST", "http://localhost:8372/account", true);
+            xmlhttp.open("POST", "http://" + window.location.hostname + ":8372/account");
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.send(JSON.stringify(registerRequest));
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <section class="splash">
+      <h1>T A V O L O</h1>
+      <h2>Register</h2>
+      <div id="passwordMatchError" style="display:none">
+        <p>Passwords do not match</p>
+      </div>
+      <div id="requiredFieldsError" style="display:none">
+        <p>All fields are required</p>
+      </div>
+      <div id="registerationError" style="display:none">
+        <p>Email already registered. Please try again.</p>
+      </div>
+      <table>
+        <tr>
+          <td colspan="2"><input type="text" placeholder="E-mail address" id="email" name="email"/></td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="2"><input type="text" placeholder="Your name" id="moniker" name="moniker"/></td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="2"><input type="password" placeholder="Password" id="password" name="password"/></td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="2"><input type="password" placeholder="Re-type password" id="repassword" name="repassword"/></td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="2"><br/><a class="link-button" id="register-button" href="javascript:register()">R E S I S T E R</a></td>
+        </tr>
+      </table>
+    </section>
+    <div class="footer">
+      (c) 2019-2020 TypedMagic - All Rights Reserved
+    </div>
+  </body>
+</html>
