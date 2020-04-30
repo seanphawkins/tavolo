@@ -16,6 +16,7 @@ import typedmagic.tavolo.service.authentication.{Authentication, AuthenticationT
 import zio.logging.Logging.Logging
 import zio.stm.TMap
 import zio.{Ref, Runtime, ZIO, ZLayer}
+import eu.timepit.refined._
 
 import scala.concurrent.duration._
 import scala.language.implicitConversions
@@ -89,8 +90,13 @@ class Api(sessions: TMap[String, Ref[EstimationSession]], layer: ZLayer[Any, Not
         extractStrictEntity(3.seconds) { entity =>
           complete {
             val registrationRequest = readFromString[RegistrationRequest](entity.data.utf8String)
+            val email: Either[String, EmailAddress] = refineV[Email](registrationRequest.email)
+            val emailAddress = email match {
+              case Right(e) => e
+              case Left(ex) => throw new RuntimeException(ex)
+            }
             Authentication
-              .register(EmailAddress(registrationRequest.email), Password(registrationRequest.password + registrationRequest.email), registrationRequest.moniker)
+              .register(emailAddress, Password(registrationRequest.password + registrationRequest.email), registrationRequest.moniker)
               .provideLayer(layer)
               .map { resp => HttpResponse(StatusCodes.OK, entity = s"""{"token":"${resp._1}", "moniker":"${resp._2.moniker}", "id":${resp._2.id}}""") }
               .mapError(_ => HttpResponse(StatusCodes.BadRequest, entity = "Couldn't create account"))
@@ -103,8 +109,13 @@ class Api(sessions: TMap[String, Ref[EstimationSession]], layer: ZLayer[Any, Not
         extractStrictEntity(3.seconds) { entity =>
           complete {
             val loginRequest = readFromString[LoginRequest](entity.data.utf8String)
+            val email: Either[String, EmailAddress] = refineV[Email](loginRequest.email)
+            val emailAddress = email match {
+              case Right(e) => e
+              case Left(ex) => throw new RuntimeException(ex)
+            }
             Authentication
-              .login(EmailAddress(loginRequest.email), Password(loginRequest.password + loginRequest.email))
+              .login(emailAddress, Password(loginRequest.password + emailAddress))
               .provideLayer(layer)
               .map { resp => HttpResponse(StatusCodes.OK, entity = s"""{"token":"${resp._1}", "moniker":"${resp._2.moniker}", "id":${resp._2.id}}""") }
               .mapError(_ => HttpResponse(StatusCodes.BadRequest, entity = "Login request was invalid"))

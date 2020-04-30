@@ -1,5 +1,8 @@
 package typedmagic.tavolo.model
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+
 import akka.actor.typed.ActorRef
 import zio.{Task, ZIO}
 
@@ -34,7 +37,10 @@ case class EstimationSession private(
   def -(id: Long): EstimationSession = copy(participants = this.participants.filterNot(_.id == id))
   def addVote(id: Long, v: Option[String]): EstimationSession = copy(participants = this.participants.map(p => if (p.id == id) p.copy(currentVote = v) else p))
   def clearVotes(): EstimationSession = copy(participants = this.participants.map(p => p.copy(currentVote = None)))
-  def setIssue(s: String): EstimationSession = copy(currentIssue = s)
+  def setIssue(s: String): EstimationSession = {
+    val es = Base64.getEncoder.encodeToString(s.getBytes(StandardCharsets.UTF_8))
+    copy(currentIssue = es)
+  }
   def setDeck(d: Seq[String]): EstimationSession = copy(deck = d)
 
   def asJson: String =
@@ -60,6 +66,7 @@ object EstimationDeck {
   val Letters = Seq("A", "B", "C", "D", "E", "F", "G", "H", "∞", "?", "☕")
   val UpDown = Seq("👍", "👎")
   val Confidence = Seq("✊", "☝️", "✌️", "🤟", "✌️✌️", "🖐")
-  private val decks = Array(FibPoints, TShirtSizes, Letters, UpDown, Confidence)
+  val RudeFingers = Seq("✊", "️🖕", "🖕🖕", "🖕🖕🖕", "🖕🖕🖕🖕", "🖕🖕🖕🖕🖕")
+  private val decks = Array(FibPoints, TShirtSizes, Letters, UpDown, Confidence,RudeFingers )
   def apply(i: Int): Seq[String] = decks(i)
 }

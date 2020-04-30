@@ -13,12 +13,15 @@ val postgres = "42.2.8"
 val logback = "1.2.3"
 val jsonIter = "2.1.12"
 val zioLogging = "0.2.6"
+val refined = "0.9.14"
 
 libraryDependencies ++= Seq(
   "dev.zio" %% "zio" % zio,
 
   "dev.zio" %% "zio-logging" % zioLogging,
   "dev.zio" %% "zio-logging-slf4j" % zioLogging,
+
+  "eu.timepit" %% "refined" % refined,
 
   "com.typesafe.akka" %% "akka-actor-typed" % akka,
   "com.typesafe.akka" %% "akka-stream" % akka,
@@ -32,6 +35,7 @@ libraryDependencies ++= Seq(
 
   "io.getquill" %% "quill-core" % quill,
   "io.getquill" %% "quill-jdbc" % quill,
+
   "org.postgresql" % "postgresql" % postgres,
 
   "com.pauldijou" %% "jwt-core" % jwt,
@@ -39,5 +43,5 @@ libraryDependencies ++= Seq(
   "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"   % jsonIter,
   "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % jsonIter,
 
-"dev.zio" %% "zio-test" % zio % Test,
+  "dev.zio" %% "zio-test" % zio % Test,
 )

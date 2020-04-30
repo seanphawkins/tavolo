@@ -91,7 +91,7 @@
           getE("kick-links").innerHTML = generateKickLinks(sd.participants);
         } else {
           showAndHide("pIssue", "oIssue");
-          getE("pIssueText").innerHTML = sd.currentIssue;
+          getE("pIssueText").innerHTML = atob(sd.currentIssue);
         };
         getE("vote-status").innerHTML = generateStatus(sd.participants);
         if (canVote) {
@@ -161,12 +161,18 @@
         <textarea id="oIssueText" placeholder="Enter issue text here" rows="5" cols="160" oninput="setIssue(this.value)"></textArea>
         <br/><br/>
         <a class="link-button" id="clearVotes" href="javascript:clearForRevote()">Clear votes</a>
-        <input type="radio" id="standardPoints" name="deck" value="0" onSelect="setDeck(0);" checked>
-        <label for="standardPoints">Standard Fib Points</label><br>
-        <input type="radio" id="tshirtSizes" name="deck" value="1" onSelect="setDeck(1);">
-        <label for="tshirtSizes">T-shirt Sizing</label><br>
-        <input type="radio" id="letters" name="deck" value="2" onSelect="setDeck(2);">
-        <label for="letters">Letters</label>
+        <input type="radio" id="standardPoints" name="deck" value="0" onclick="setDeck(0);" checked>
+        <label for="standardPoints">Standard Fib Points   </label>
+        <input type="radio" id="tshirtSizes" name="deck" value="1" onclick="setDeck(1);">
+        <label for="tshirtSizes">T-shirt Sizing   </label>
+        <input type="radio" id="letters" name="deck" value="2" onclick="setDeck(2);">
+        <label for="letters">Letters   </label>
+        <input type="radio" id="yesno" name="deck" value="3" onclick="setDeck(3);">
+        <label for="yesno">Yes/No   </label>
+        <input type="radio" id="fingers" name="deck" value="4" onclick="setDeck(4);">
+        <label for="fingers">Fingers   </label>
+        <input type="radio" id="rudefingers" name="deck" value="5" onclick="setDeck(5);">
+        <label for="rudefingers">Rude Fingers   </label>
       </div>
       <div id="pIssue" style="display:none">
         <h2>Issue:</h2>

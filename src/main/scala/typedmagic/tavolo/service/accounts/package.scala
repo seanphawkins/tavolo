@@ -3,9 +3,13 @@ package typedmagic.tavolo.service
 import java.time.Instant
 
 import io.getquill.{PostgresJdbcContext, SnakeCase}
-import typedmagic.tavolo.model.{Account, AccountStatus, EmailAddress, Password}
+import typedmagic.tavolo.model._
 import zio.clock.Clock
 import zio.{Has, IO, Layer, ZIO, ZLayer}
+import eu.timepit.refined._
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.auto._
+import eu.timepit.refined.string._
 
 package object accounts {
 
@@ -31,8 +35,14 @@ package object accounts {
         implicit val decodeInstant: MappedEncoding[Long, Instant] = MappedEncoding[Long, Instant](Instant.ofEpochMilli)
         implicit val encodeAccountStatus: MappedEncoding[AccountStatus, Int] = MappedEncoding[AccountStatus, Int](_.value)
         implicit val decodeAccountStatus: MappedEncoding[Int, AccountStatus] = MappedEncoding[Int, AccountStatus](AccountStatus.apply)
-        implicit val encodeEmailAddress: MappedEncoding[EmailAddress, String] = MappedEncoding[EmailAddress, String](_.value)
-        implicit val decodeEmailAddress: MappedEncoding[String, EmailAddress] = MappedEncoding[String, EmailAddress](EmailAddress.apply)
+        implicit val encodeEmailAddress: MappedEncoding[EmailAddress, String] = MappedEncoding[EmailAddress, String](_.toString)
+        implicit val decodeEmailAddress: MappedEncoding[String, EmailAddress] = MappedEncoding[String, EmailAddress](email => {
+          val ee: Either[String, EmailAddress] = refineV[Email](email)
+          ee match {
+            case Right(x) => x
+            case Left(ex) => throw new RuntimeException(ex)
+          }
+        })
         implicit val encodePassword: MappedEncoding[Password, String] = MappedEncoding[Password, String](_.value)
         implicit val decodePassword: MappedEncoding[String, Password] = MappedEncoding[String, Password](Password.apply)
 
