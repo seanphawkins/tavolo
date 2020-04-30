@@ -2,7 +2,7 @@ name := "tavolo"
 
 version := "0.1"
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.2"
 
 val zio = "1.0.0-RC18-2"
 val quill = "3.5.1"
