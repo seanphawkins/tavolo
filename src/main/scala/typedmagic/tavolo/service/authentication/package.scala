@@ -28,11 +28,11 @@ package object authentication {
         private implicit val codec: JsonValueCodec[CustomClaims] = JsonCodecMaker.make[CustomClaims](CodecMakerConfig)
 
         override def register(email: EmailAddress, password: Password, moniker: String): ZIO[Any, AuthenticationError, (String, Account)] =
-          ( for {
-              a     <- accounts.create(Account(-1, email, password, moniker, ACTIVE))
-              token <- tokens.makeLoginToken(a, SECRET_KEY)
-            } yield (token, a)
-          ).mapError(_ => RegistrationFailed)
+          (for {
+            a <- accounts.create(Account(-1, email, password, moniker, ACTIVE))
+            token <- tokens.makeLoginToken(a, SECRET_KEY)
+          } yield (token, a)
+            ).orElseFail(RegistrationFailed)
 
         override def login(email: EmailAddress, password: Password): ZIO[Any, AuthenticationError, (String, Account)] =
           ( for {
@@ -53,9 +53,7 @@ package object authentication {
           tokens
             .validateLoginToken(t, SECRET_KEY)
             .map(c => c.subject.map(s => (s, c.content)))
-            .someOrFail(AuthenticationTokenInvalid)
-            .map( v => (v._1.toLong, readFromString(v._2).name))
-            .mapError(ex => AuthenticationTokenInvalid)
+            .someOrFail(AuthenticationTokenInvalid).bimap(ex => AuthenticationTokenInvalid, v => (v._1.toLong, readFromString(v._2).name))
             .catchAll(_ => ZIO.fail( AuthenticationTokenInvalid))
       }
     }

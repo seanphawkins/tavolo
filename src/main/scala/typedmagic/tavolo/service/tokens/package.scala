@@ -22,12 +22,10 @@ package object tokens {
     val live: ZLayer[Clock, Nothing, Tokens] = ZLayer.fromService { clock =>
       new Service {
         override def makeLoginToken(a: Account, key: SecretKey): ZIO[Any, TokenError, String] =
-          (
-            clock.currentDateTime map { d =>
-               implicit val jc: JavaClock = JavaClock.fixed(d.toInstant, ZoneId.systemDefault())
-               Jwt.encode(JwtClaim(s"""{"sub":"${a.id}", "name": "${a.moniker}"}""").issuedNow.expiresIn(24 * 3600), key, JwtAlgorithm.HS256)
-            }
-          ).mapError(ex => CannotGenerateToken(ex.getMessage))
+          clock.currentDateTime.bimap(ex => CannotGenerateToken(ex.getMessage), { d =>
+            implicit val jc: JavaClock = JavaClock.fixed(d.toInstant, ZoneId.systemDefault())
+            Jwt.encode(JwtClaim(s"""{"sub":"${a.id}", "name": "${a.moniker}"}""").issuedNow.expiresIn(24 * 3600), key, JwtAlgorithm.HS256)
+          })
 
         override def validateLoginToken(token: String, key: SecretKey): ZIO[Any, TokenError, JwtClaim] =
           (

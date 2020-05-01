@@ -61,7 +61,7 @@ class Api(sessions: TMap[String, Ref[EstimationSession]], layer: ZLayer[Any, Not
                 complete {
                   (for {
                     token <- ZIO.succeed(t).someOrFail(AuthenticationTokenInvalid)
-                    id <- Authentication.validateToken(token).mapError(_ => AuthenticationTokenInvalid).catchAll(_ => ZIO.fail(AuthenticationTokenInvalid))
+                    id <- Authentication.validateToken(token).orElseFail(AuthenticationTokenInvalid).catchAll(_ => ZIO.fail(AuthenticationTokenInvalid))
                     (src, aRef) = createSource()
                     participant = Participant(id._1, aRef, id._2, canVote = voteOption.forall(_.toBoolean), None)
                     sessionRef <- sessions.get(sessionId).commit.someOrFail(InvalidSessionId)
@@ -97,9 +97,7 @@ class Api(sessions: TMap[String, Ref[EstimationSession]], layer: ZLayer[Any, Not
             }
             Authentication
               .register(emailAddress, Password(registrationRequest.password + registrationRequest.email), registrationRequest.moniker)
-              .provideLayer(layer)
-              .map { resp => HttpResponse(StatusCodes.OK, entity = s"""{"token":"${resp._1}", "moniker":"${resp._2.moniker}", "id":${resp._2.id}}""") }
-              .mapError(_ => HttpResponse(StatusCodes.BadRequest, entity = "Couldn't create account"))
+              .provideLayer(layer).bimap(_ => HttpResponse(StatusCodes.BadRequest, entity = "Couldn't create account"), resp => HttpResponse(StatusCodes.OK, entity = s"""{"token":"${resp._1}", "moniker":"${resp._2.moniker}", "id":${resp._2.id}}"""))
           }
         }
       }
@@ -116,9 +114,7 @@ class Api(sessions: TMap[String, Ref[EstimationSession]], layer: ZLayer[Any, Not
             }
             Authentication
               .login(emailAddress, Password(loginRequest.password + emailAddress))
-              .provideLayer(layer)
-              .map { resp => HttpResponse(StatusCodes.OK, entity = s"""{"token":"${resp._1}", "moniker":"${resp._2.moniker}", "id":${resp._2.id}}""") }
-              .mapError(_ => HttpResponse(StatusCodes.BadRequest, entity = "Login request was invalid"))
+              .provideLayer(layer).bimap(_ => HttpResponse(StatusCodes.BadRequest, entity = "Login request was invalid"), resp => HttpResponse(StatusCodes.OK, entity = s"""{"token":"${resp._1}", "moniker":"${resp._2.moniker}", "id":${resp._2.id}}"""))
           }
         }
       }
@@ -129,16 +125,14 @@ class Api(sessions: TMap[String, Ref[EstimationSession]], layer: ZLayer[Any, Not
             complete {
               (for {
                 token <- ZIO.succeed(t).someOrFail(AuthenticationTokenInvalid)
-                id <- Authentication.validateToken(token).mapError(_ => AuthenticationTokenInvalid).catchAll(_ => ZIO.fail(AuthenticationTokenInvalid))
+                id <- Authentication.validateToken(token).orElseFail(AuthenticationTokenInvalid).catchAll(_ => ZIO.fail(AuthenticationTokenInvalid))
                 sessionId <- ZIO.effect {
                   UUID.randomUUID().toString
                 }
                 newSession <- Ref.make(EstimationSession(id._1, "", EstimationDeck.FibPoints, Seq.empty))
                 _ <- sessions.put(sessionId, newSession).commit
               } yield sessionId)
-                .provideLayer(layer)
-                .map(sessionId => HttpResponse(StatusCodes.OK, entity = s"""{"sessionId":"$sessionId"}"""))
-                .mapError(_ => HttpResponse(StatusCodes.BadRequest, entity = "Cannot create session"))
+                .provideLayer(layer).bimap(_ => HttpResponse(StatusCodes.BadRequest, entity = "Cannot create session"), sessionId => HttpResponse(StatusCodes.OK, entity = s"""{"sessionId":"$sessionId"}"""))
             }
           }
         }
